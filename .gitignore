@@ -37,7 +37,7 @@ coverage.xml
 .junit.xml
 
 # Migrations (opcional si se autogeneran)
-alembic/versions/
+# alembic/versions/
 
 # Static files / build artifacts
 staticfiles/
