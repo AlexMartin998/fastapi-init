@@ -8,13 +8,49 @@ from src.products.dependencies.products_di import get_category_service
 router = APIRouter(prefix="/categories", tags=["categories"])
 
 
+# from fastapi_filter import FilterDepends
+# from src.products.models.category_model import Category
+# from sqlmodel import select
+# from sqlmodel.ext.asyncio.session import AsyncSession
+# from config.db import get_session
+
+
+# @router.get("/", response_model=List[CategoryRead])
+# async def list_categories(
+#     category_filter: FilterDepends = FilterDepends(Category),
+#     session: AsyncSession   = Depends(get_session),
+# ):
+#     query = category_filter.apply(select(Category))
+#     result = await session.exec(query)
+#     return result.all()
+
+
+
+from fastapi_filter import FilterDepends
+from src.products.models.category_model import Category
+from sqlmodel import select
+from sqlmodel.ext.asyncio.session import AsyncSession
+from config.db import get_session
+from src.products.filters.category_filter import CategoryFilter
+
 @router.get("/", response_model=List[CategoryRead])
 async def list_categories(
-    offset: int = Query(0, ge=0),
-    limit: int = Query(100, le=200),
-    service: CategoryService = Depends(get_category_service),
+    category_filter: CategoryFilter = FilterDepends(CategoryFilter),
+    session:        AsyncSession    = Depends(get_session),
 ):
-    return await service.find_all(offset, limit)
+    query  = category_filter.filter(select(Category))
+    result = await session.execute(query)       # execute() existe aquí
+    return result.scalars().all()               # scalars() extrae tus modelos
+
+# @router.get("/", response_model=List[CategoryRead])
+# async def list_categories(
+#     offset: int = Query(0, ge=0),
+#     limit: int = Query(100, le=200),
+#     service: CategoryService = Depends(get_category_service),
+# ):
+#     return await service.find_all(offset, limit)
+
+
 
 
 @router.get("/{category_id}", response_model=CategoryRead)
